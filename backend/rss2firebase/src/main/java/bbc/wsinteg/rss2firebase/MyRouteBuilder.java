@@ -1,4 +1,4 @@
-package bbc.wsinteg;
+package bbc.wsinteg.rss2firebase;
 
 import java.util.Map;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package bbc.wsinteg;
+package bbc.wsinteg.rss2firebase;
 
 import org.apache.camel.main.Main;
 
