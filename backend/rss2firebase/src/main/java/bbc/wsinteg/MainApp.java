@@ -1,4 +1,4 @@
-package wsinteg;
+package bbc.wsinteg;
 
 import org.apache.camel.main.Main;
 

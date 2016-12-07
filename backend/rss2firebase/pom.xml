@@ -7,7 +7,7 @@
   <groupId>wsinteg</groupId>
   <artifactId>rss2firebase</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
 
   <name>A Camel Route</name>
   <url>http://www.myorganization.org</url>

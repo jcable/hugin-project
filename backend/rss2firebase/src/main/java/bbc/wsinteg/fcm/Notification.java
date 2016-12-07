@@ -1,4 +1,4 @@
-package wsinteg.fcm;
+package bbc.wsinteg.fcm;
 
 public class Notification {
 

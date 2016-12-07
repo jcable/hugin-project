@@ -1,4 +1,4 @@
-package wsinteg;
+package bbc.wsinteg;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -9,7 +9,7 @@ import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndContent;
 import org.apache.camel.model.dataformat.JsonLibrary;
-import wsinteg.fcm.Message;
+import bbc.wsinteg.fcm.Message;
 
 /**
  * A Camel Java DSL Router
