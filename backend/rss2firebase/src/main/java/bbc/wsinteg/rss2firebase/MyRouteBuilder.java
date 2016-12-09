@@ -10,16 +10,13 @@ import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndContent;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import bbc.wsinteg.fcm.Message;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.UnsupportedEncodingException;
 
-/**
- * A Camel Java DSL Router
-curl -v -X POST -H "Authorization: key=$api_key" -H 'Content-Type: application/json' 'https://fcm":"/topics/news","notification":{"title":"Hi","body":"there"}}'
-
- */
 public class MyRouteBuilder extends RouteBuilder {
 
-    //String server_key = "AAAAxu7HP60:APA91bHozcTBnmapUL-BFbjQqCtGNuu3xfNDMwRjbygrStEL5jIZM-kRMsYqi-_YQXUoMTklt9A2VWlRjD1ePSBkOaF9MyEy4_FSnP6wRn-KZkWNcok7fd9w2ovD1u9IZNpJME6rZ5dwC7Ew7-wgCqZDviY2Osi0Lg";
-    //String feed = "http://feeds.bbci.co.uk/news/world/rss.xml?edition=uk"
+    private static int max = 2060; // json message can't be more for notifications
 
     public void configure() {
 	Processor myProcessor = new Processor() {
@@ -31,7 +28,24 @@ public class MyRouteBuilder extends RouteBuilder {
 			m.to = "/topics/"+System.getProperty("topic");
 			m.notification.title = entry.getTitle();
 			m.notification.body = entry.getDescription().getValue();
-
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				String jsonInString = mapper.writeValueAsString(m);
+				int n = jsonInString.getBytes("UTF-8").length;
+				if(n > max) {
+					max -= 3; // leave room for an elipsis
+					while(n > max) {
+						m.notification.body = m.notification.body.substring(0, m.notification.body.length()-1); 
+						jsonInString = mapper.writeValueAsString(m);
+						n = jsonInString.getBytes("UTF-8").length;
+					}
+					m.notification.body += "\u2026";	
+				}
+			} catch(JsonProcessingException e) {
+				e.printStackTrace();
+			} catch(UnsupportedEncodingException e2) {
+				e2.printStackTrace();
+			}
 			exchange.getIn().setBody(m);
     		}
 	};
