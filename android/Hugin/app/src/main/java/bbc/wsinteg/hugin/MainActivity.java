@@ -43,19 +43,6 @@ public class MainActivity extends ListActivity {
 
         if(extras == null) {
             FirebaseMessaging.getInstance().subscribeToTopic("news");
-/*
-        File f = new File(new File(getFilesDir(), "docs"), "thailand-38173269");
-            File file = new File(new File(getFilesDir(), "docs"), "thailand-38173269.html");
-            f.renameTo(file);
-        boolean b = file.canRead();
-        Uri contentUri = FileProvider.getUriForFile(this, "bbc.wsinteg.hugin.fileprovider", file);
-
-        Intent internetIntent = new Intent(Intent.ACTION_VIEW);
-        internetIntent.setDataAndType(contentUri, "text/html");
-        internetIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        startActivity(internetIntent);
-        */
         }
 
         NewsDatabase ndb = new NewsDatabase(getApplicationContext());
