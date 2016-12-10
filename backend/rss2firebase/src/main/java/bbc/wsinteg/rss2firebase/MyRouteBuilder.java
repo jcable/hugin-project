@@ -24,10 +24,10 @@ public class MyRouteBuilder extends RouteBuilder {
 			SyndFeed feed = exchange.getIn().getBody(SyndFeed.class);
 			SyndEntry entry = (SyndEntry)feed.getEntries().get(0);
 
-			Message m = new Message();
-			m.to = "/topics/"+System.getProperty("topic");
-			m.notification.title = entry.getTitle();
-			m.notification.body = entry.getDescription().getValue();
+			Message m = Message.buildNotification(
+				"/topics/"+System.getProperty("topic"),
+				entry.getTitle(),
+				entry.getDescription().getValue());
 			ObjectMapper mapper = new ObjectMapper();
 			try {
 				String jsonInString = mapper.writeValueAsString(m);

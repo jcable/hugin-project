@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Hugin</string>
-    <string name="textview">TextView</string>
     <string name="title">title</string>
     <string name="body">body</string>
     <string name="welcome">Welcome</string>

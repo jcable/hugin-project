@@ -18,14 +18,16 @@ public class NotificationBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Bundle extras = intent.getExtras();
-        if(extras != null) {
-            NewsDatabase ndb = new NewsDatabase(context);
-            ndb.addItem(
-                    extras.getString("google.message_id"),
-                    extras.getString("gcm.notification.title"),
-                    extras.getString("gcm.notification.body")
-            );
+        if(intent.hasExtra("gcm.notification.title")) {
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                NewsDatabase ndb = new NewsDatabase(context);
+                ndb.addItem(
+                        extras.getString("google.message_id"),
+                        extras.getString("gcm.notification.title"),
+                        extras.getString("gcm.notification.body")
+                );
+            }
         }
     }
 }

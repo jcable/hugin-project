@@ -1,14 +1,19 @@
 package bbc.wsinteg.hugin;
 
+import android.content.ClipData;
 import android.content.Intent;
+import android.net.Uri;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.io.File;
 import java.util.Map;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
 
 /**
  * Created by cablej01 on 06/12/2016.
@@ -73,13 +78,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private void handleData(String id, Map<String,String> m) {
-        Intent intent = new Intent(this, MainActivity.class);
-        for(Map.Entry<String,String> e : m.entrySet()) {
-            intent.putExtra(e.getKey(), e.getValue());
+        FileDecoder fd = FileDecoder.getDecoder(getApplicationContext());
+        String name = m.get("filename");
+        int position = Integer.parseInt(m.get("part"));
+        fd.addPart(name, position, m.get("body"));
+        // TODO see if this is a resend or otherwise out of order part and now completes the file
+        if(m.get("last").equals("1")) {
+            Uri contentUri = fd.getFile(name, position);
+            if(contentUri != null) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.setDataAndType(contentUri, "text/html");
+                startActivity(intent);
+            }
         }
-        NewsDatabase ndb = new NewsDatabase(getApplicationContext());
-        ndb.addItem(id, m.get("title"), m.get("body"));
-        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
     }
 }
