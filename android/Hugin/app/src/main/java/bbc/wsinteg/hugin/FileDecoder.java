@@ -1,21 +1,13 @@
 package bbc.wsinteg.hugin;
 
 import android.content.Context;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.support.v4.content.FileProvider;
-import android.util.Base64;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -29,7 +21,7 @@ public class FileDecoder {
     private static FileDecoder x = null;
     private Context context;
 
-    public static FileDecoder getDecoder(Context context) {
+    public static FileDecoder getInstance(Context context) {
         if(x==null) x = new FileDecoder(context);
         return x;
     }
@@ -48,50 +40,29 @@ public class FileDecoder {
         }
     }
 
-    public Uri getFile(String name, int lastpart) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            File folder = new File(context.getFilesDir(), "docs");
-            boolean ok = folder.mkdir();
-            File f = export(name, lastpart, folder);
-            if(f != null) {
-                return FileProvider.getUriForFile(context, "bbc.wsinteg.hugin.fileprovider", f);
-            }
-        }
-        else {
-            File folder = context.getExternalFilesDir("docs");
-            boolean ok = folder.mkdir();
-            File f = export(name, lastpart, folder);
-            if(f != null) {
-                return Uri.fromFile(f);
-            }
-        }
-        return null;
-    }
 
-    private String getFromFiles(String name, int lastpart) {
-        StringBuilder sb = new StringBuilder();
+    public void joinFiles(String name, int parts) {
         try {
-            for(int i = 0; i<=lastpart; i++) {
+            FileOutputStream fo = context.openFileOutput(name, Context.MODE_PRIVATE);
+            for(int i = 0; i<parts; i++) {
                 FileInputStream fis = context.openFileInput(String.format(Locale.US, "%s_%d", name, i));
-                BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line).append("\n");
+                while(true) {
+                    int b = fis.read();
+                    if(b == -1) {
+                        break;
+                    }
+                    fo.write(b);
                 }
-                reader.close();
                 fis.close();
             }
+            fo.close();
         } catch (IOException e) {
             Log.e("Internal Storage", e.getMessage());
             // TODO request resend of this part
-            return null;
         }
-        return sb.toString();
     }
 
-    private File export(String name, int lastpart, File folder) {
-        String s = getFromFiles(name, lastpart);
-        InputStream is = new ByteArrayInputStream(Base64.decode(s, Base64.DEFAULT));
+    public File unzip(InputStream is, File folder) {
         ZipInputStream zis = new ZipInputStream(is);
         try {
             ZipEntry ze = zis.getNextEntry();

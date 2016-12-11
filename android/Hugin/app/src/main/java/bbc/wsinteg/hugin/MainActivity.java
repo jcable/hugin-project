@@ -47,8 +47,6 @@ public class MainActivity extends ListActivity {
 
         NewsDatabase ndb = new NewsDatabase(getApplicationContext());
 
-
-
         ClientCursorAdapter adapter = new ClientCursorAdapter(
                 this, R.layout.list_item, ndb.getCursor(), 0 );
 

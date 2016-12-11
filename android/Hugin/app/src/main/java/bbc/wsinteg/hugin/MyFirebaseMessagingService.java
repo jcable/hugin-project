@@ -1,15 +1,22 @@
 package bbc.wsinteg.hugin;
 
 import android.content.ClipData;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v4.content.FileProvider;
+import android.util.Base64;
+import android.util.Base64InputStream;
 import android.util.Log;
 
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.Map;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
@@ -21,6 +28,9 @@ import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "MyFirebaseMsgService";
+
+    private static final String SENDER_ID = "854409559981";
+    private int msgId = 0;
 
     /**
      * Called when message is received.
@@ -78,20 +88,49 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private void handleData(String id, Map<String,String> m) {
-        FileDecoder fd = FileDecoder.getDecoder(getApplicationContext());
+        Context context = getApplicationContext();
+        FileDecoder fd = FileDecoder.getInstance(context);
         String name = m.get("filename");
         int position = Integer.parseInt(m.get("part"));
         fd.addPart(name, position, m.get("body"));
         // TODO see if this is a resend or otherwise out of order part and now completes the file
+        Uri contentUri = null;
         if(m.get("last").equals("1")) {
-            Uri contentUri = fd.getFile(name, position);
-            if(contentUri != null) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.addCategory(Intent.CATEGORY_BROWSABLE);
-                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.setDataAndType(contentUri, "text/html");
-                startActivity(intent);
+            fd.joinFiles(name, position + 1);
+            Base64InputStream is;
+            try {
+                FileInputStream fis = context.openFileInput(name);
+                is = new Base64InputStream(fis, Base64.DEFAULT);
+            } catch (FileNotFoundException e) {
+                return;
+            }
+            File folder = context.getExternalFilesDir("docs");
+            boolean ok = folder.mkdir();
+            File f = fd.unzip(is, folder);
+            if (f != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    contentUri = FileProvider.getUriForFile(context, context.getPackageName()+ ".fileprovider", f);
+                }
+                else {
+                    contentUri = Uri.fromFile(f);
+                }
             }
         }
+        if(contentUri != null) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setDataAndType(contentUri, "text/html");
+            startActivity(intent);
+        }
+    }
+
+    private void send(Map<String,String> data) {
+        RemoteMessage.Builder msg = new RemoteMessage.Builder(SENDER_ID + "@gcm.googleapis.com")
+                .setMessageId(Integer.toString(++msgId));
+        for(Map.Entry<String,String> e : data.entrySet()) {
+            msg.addData(e.getKey(), e.getValue());
+        }
+        FirebaseMessaging.getInstance().send(msg.build());
     }
 }
