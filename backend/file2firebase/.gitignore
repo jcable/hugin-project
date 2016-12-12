@@ -1,4 +1,7 @@
 target/
+data/
+enc/
+zip/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
