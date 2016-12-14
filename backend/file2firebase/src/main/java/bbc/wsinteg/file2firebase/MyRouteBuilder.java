@@ -19,7 +19,7 @@ public class MyRouteBuilder extends RouteBuilder {
 	Processor myProcessor = new Processor() {
     		public void process(Exchange exchange) {
 			Map<String,String> data = new HashMap<String,String>();
-			data.put("filename", exchange.getIn().getHeader("CamelFileName", String.class));
+			data.put("filename", exchange.getIn().getHeader("CamelFileNameConsumed", String.class));
 			data.put("body", exchange.getIn().getBody(String.class));
 			data.put("part", exchange.getProperty("CamelSplitIndex", String.class));
 			data.put("last", exchange.getProperty("CamelSplitComplete", Boolean.class)?"1":"0");
