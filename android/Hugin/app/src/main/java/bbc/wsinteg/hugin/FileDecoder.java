@@ -79,7 +79,7 @@ public class FileDecoder {
             is.close();
             return file;
         } catch (IOException e) {
-            Log.e("Internal Storage", e.getMessage());
+            //Log.e("Internal Storage", e.getMessage());
             try {
                 zis.close();
                 is.close();

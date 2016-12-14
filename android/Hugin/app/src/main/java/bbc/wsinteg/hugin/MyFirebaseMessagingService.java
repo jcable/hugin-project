@@ -19,6 +19,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Map;
 
+import static android.R.attr.data;
+import static android.R.attr.name;
+import static android.R.string.ok;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
 
@@ -94,27 +97,44 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         int position = Integer.parseInt(m.get("part"));
         fd.addPart(name, position, m.get("body"));
         // TODO see if this is a resend or otherwise out of order part and now completes the file
-        Uri contentUri = null;
         if(m.get("last").equals("1")) {
-            fd.joinFiles(name, position + 1);
-            Base64InputStream is;
-            try {
-                FileInputStream fis = context.openFileInput(name);
-                is = new Base64InputStream(fis, Base64.DEFAULT);
-            } catch (FileNotFoundException e) {
-                return;
+            completeFileReception(context, fd, name, position+1);
+        }
+    }
+
+    private void completeFileReception(Context context, FileDecoder fd, String name, int numberOfParts) {
+        Uri contentUri = null;
+        fd.joinFiles(name, numberOfParts);
+        Base64InputStream is;
+        try {
+            FileInputStream fis = context.openFileInput(name);
+            is = new Base64InputStream(fis, Base64.DEFAULT);
+        } catch (FileNotFoundException e) {
+            return;
+        }
+        File folder = context.getExternalFilesDir("docs");
+        if(!folder.exists()) {
+            boolean ok;
+            if(!folder.getParentFile().exists()) {
+                ok = folder.getParentFile().mkdir();
             }
-            File folder = context.getExternalFilesDir("docs");
-            boolean ok = folder.mkdir();
-            File f = fd.unzip(is, folder);
-            if (f != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    contentUri = FileProvider.getUriForFile(context, context.getPackageName()+ ".fileprovider", f);
-                }
-                else {
-                    contentUri = Uri.fromFile(f);
-                }
+            ok = folder.mkdir();
+        }
+        File f = fd.unzip(is, folder);
+        if (f != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                contentUri = FileProvider.getUriForFile(context, context.getPackageName()+ ".fileprovider", f);
             }
+            else {
+                contentUri = Uri.fromFile(f);
+            }
+        }
+        {
+            FirebaseMessaging.getInstance().send(new RemoteMessage.Builder(SENDER_ID + "@gcm.googleapis.com")
+                    .setMessageId(Integer.toString(++msgId))
+                    .addData("to", "news")
+                    .addData("got", name)
+                    .build());
         }
         if(contentUri != null) {
             Intent intent = new Intent(Intent.ACTION_VIEW);
