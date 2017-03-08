@@ -62,31 +62,20 @@ public class FileDecoder {
         }
     }
 
-    public File unzip(InputStream is, File folder) {
+    public File unzip(InputStream is, File folder) throws IOException {
         ZipInputStream zis = new ZipInputStream(is);
-        try {
-            ZipEntry ze = zis.getNextEntry();
-            String filename = ze.getName();
-            File file = new File(folder, filename);
-            FileOutputStream fos = new FileOutputStream(file);
-            int n=0;
-            byte[] b = new byte[1024];
-            while((n=zis.read(b, 0, 1024)) != -1) {
-                fos.write(b, 0, n);
-            }
-            fos.close();
-            zis.close();
-            is.close();
-            return file;
-        } catch (IOException e) {
-            //Log.e("Internal Storage", e.getMessage());
-            try {
-                zis.close();
-                is.close();
-            } catch (IOException e2) {
-                Log.e("Internal Storage", e2.getMessage());
-            }
-            return null;
+        ZipEntry ze = zis.getNextEntry();
+        String filename = ze.getName();
+        File file = new File(folder, filename);
+        FileOutputStream fos = new FileOutputStream(file);
+        int n=0;
+        byte[] b = new byte[1024];
+        while((n=zis.read(b, 0, 1024)) != -1) {
+            fos.write(b, 0, n);
         }
+        fos.close();
+        zis.close();
+        is.close();
+        return file;
     }
 }

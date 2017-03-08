@@ -7,7 +7,7 @@ To build this project use
 
 To run this project from within Maven use
 
-    mvn exec:java -Dfeed=<RSS Feed URL> -DapiKey=<Your Firebase Server Key> -Dtopic=<FCM topic to send to>
+    mvn exec:java -DapiKey=<Your Firebase Server Key> -Dtopic=<FCM topic to send to>
 
 For more help see the Apache Camel documentation
 

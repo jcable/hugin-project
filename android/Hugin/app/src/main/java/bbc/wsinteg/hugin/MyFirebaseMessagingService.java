@@ -1,11 +1,18 @@
 package bbc.wsinteg.hugin;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.support.v4.content.FileProvider;
+import android.support.v4.app.NotificationCompat;
 import android.util.Base64;
 import android.util.Base64InputStream;
 import android.util.Log;
@@ -17,6 +24,7 @@ import com.google.firebase.messaging.RemoteMessage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Map;
 
 import static android.R.attr.data;
@@ -112,37 +120,88 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         } catch (FileNotFoundException e) {
             return;
         }
-        File folder = context.getExternalFilesDir("docs");
-        if(!folder.exists()) {
-            boolean ok;
-            if(!folder.getParentFile().exists()) {
-                ok = folder.getParentFile().mkdir();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            try {
+                File folder = context.getExternalFilesDir("docs");
+                File f = fd.unzip(is, folder);
+                if(f != null) {
+                    f.setReadable(true, false);
+                    contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", f);
+                }
+            } catch (IOException e) {
+                Log.e("Storage", e.getMessage());
             }
-            ok = folder.mkdir();
         }
-        File f = fd.unzip(is, folder);
-        if (f != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                contentUri = FileProvider.getUriForFile(context, context.getPackageName()+ ".fileprovider", f);
-            }
-            else {
-                contentUri = Uri.fromFile(f);
+        else {
+            try {
+                File folder = null;
+                String state = Environment.getExternalStorageState();
+                if (Environment.MEDIA_MOUNTED.equals(state)) {
+                    folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+                    if (folder.canWrite() == false) {
+                        folder = null;
+                    }
+                }
+                if(folder == null) {
+                    folder = context.getExternalFilesDir("docs");
+                }
+                if (folder.canWrite() == false) {
+                    folder = context.getFilesDir();
+                }
+                if (folder.canWrite()) {
+                    folder.mkdirs();
+                    File f = fd.unzip(is, folder);
+                    if (f != null) {
+                        f.setReadable(true, false);
+                        contentUri = Uri.fromFile(f);
+                    }
+                }
+            } catch (IOException e) {
+                Log.e("Storage", e.getMessage());
             }
         }
         {
-            FirebaseMessaging.getInstance().send(new RemoteMessage.Builder(SENDER_ID + "@gcm.googleapis.com")
+            FirebaseMessaging.getInstance().send(
+                    new RemoteMessage.Builder(SENDER_ID + "@gcm.googleapis.com")
                     .setMessageId(Integer.toString(++msgId))
                     .addData("to", "news")
                     .addData("got", name)
-                    .build());
+                    .build()
+            );
         }
         if(contentUri != null) {
+            NotificationManager mNotificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.addCategory(Intent.CATEGORY_BROWSABLE);
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.setDataAndType(contentUri, "text/html");
-            startActivity(intent);
+
+            PendingIntent resultPendingIntent =
+                    PendingIntent.getActivity(context,0,intent,0);
+            long[] vibrations = {250,250,500,250,250};
+            NotificationCompat.Builder mBuilder =
+                    new NotificationCompat.Builder(context)
+                            .setSmallIcon(R.drawable.notification_icon)
+                            .setContentTitle("Hugin notification")
+                            .setContentText("New file available")
+                            //.setAutoCancel(true)
+                            //.setVibrate(vibrations)
+                            //.setLights(0xff00ff00,300,1000)
+                            .setContentIntent(resultPendingIntent);
+
+            mNotificationManager.notify(98989877, mBuilder.build());
         }
+    }
+
+    private void startBrowser(Uri contentUri) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setDataAndType(contentUri, "text/html");
+        startActivity(intent);
+
     }
 
     private void send(Map<String,String> data) {
