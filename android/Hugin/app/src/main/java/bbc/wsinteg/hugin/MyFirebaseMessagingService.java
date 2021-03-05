@@ -176,7 +176,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
             mNotificationManager.notify(98989877,
                     new Builder(context, SENDER_ID)
-                    .setSmallIcon(R.drawable.notification_icon)
+                    .setSmallIcon(R.drawable.ic_stat_bbc_default)
                     .setContentTitle("Hugin notification")
                     .setContentText("New file available")
                     .setContentIntent(resultPendingIntent)
