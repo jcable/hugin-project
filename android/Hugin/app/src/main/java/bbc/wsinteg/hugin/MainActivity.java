@@ -1,35 +1,19 @@
 package bbc.wsinteg.hugin;
 
 import android.app.ListActivity;
-import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ShareCompat;
-import android.support.v4.content.FileProvider;
-import android.text.Html;
 import android.util.Log;
 import android.view.View;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 
-import java.io.File;
-import java.io.InputStream;
-
-import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
-import static android.provider.ContactsContract.Directory.PACKAGE_NAME;
-import static com.google.android.gms.internal.zzs.TAG;
-
 public class MainActivity extends ListActivity {
-
+    private static final String TAG = "MainActivity";
     TextView content;
 
     @Override

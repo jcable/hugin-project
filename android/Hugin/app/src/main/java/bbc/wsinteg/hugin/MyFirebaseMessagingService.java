@@ -1,21 +1,17 @@
 package bbc.wsinteg.hugin;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.support.v4.content.FileProvider;
-import android.support.v4.app.NotificationCompat;
 import android.util.Base64;
 import android.util.Base64InputStream;
 import android.util.Log;
+
+import androidx.core.content.FileProvider;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -27,12 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 
-import static android.R.attr.data;
-import static android.R.attr.name;
-import static android.R.string.ok;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
-
+import static androidx.core.app.NotificationCompat.Builder;
 /**
  * Created by cablej01 on 06/12/2016.
  */
@@ -181,17 +173,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             PendingIntent resultPendingIntent =
                     PendingIntent.getActivity(context,0,intent,0);
             long[] vibrations = {250,250,500,250,250};
-            NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(context)
-                            .setSmallIcon(R.drawable.notification_icon)
-                            .setContentTitle("Hugin notification")
-                            .setContentText("New file available")
-                            //.setAutoCancel(true)
-                            //.setVibrate(vibrations)
-                            //.setLights(0xff00ff00,300,1000)
-                            .setContentIntent(resultPendingIntent);
 
-            mNotificationManager.notify(98989877, mBuilder.build());
+            mNotificationManager.notify(98989877,
+                    new Builder(context, SENDER_ID)
+                    .setSmallIcon(R.drawable.notification_icon)
+                    .setContentTitle("Hugin notification")
+                    .setContentText("New file available")
+                    .setContentIntent(resultPendingIntent)
+                    .build()
+            );
         }
     }
 

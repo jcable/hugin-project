@@ -1,7 +1,7 @@
 package bbc.wsinteg.hugin;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
