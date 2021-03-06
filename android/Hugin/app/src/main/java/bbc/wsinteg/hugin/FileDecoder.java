@@ -32,12 +32,14 @@ public class FileDecoder {
 
     public void addPart(String name, int position, String data) {
         try {
+
             FileOutputStream fos = context.openFileOutput(String.format(Locale.US, "%s_%d", name, position), Context.MODE_PRIVATE);
             fos.write(data.getBytes("UTF-8"));
             fos.close();
         } catch (IOException e) {
             Log.e("Internal Storage", e.getMessage());
         }
+
     }
 
 

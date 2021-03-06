@@ -21,7 +21,7 @@ public class MainActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        content = (TextView)findViewById(R.id.output);
+        content = findViewById(R.id.output);
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
 
@@ -41,7 +41,6 @@ public class MainActivity extends ListActivity {
             Cursor c = ndb.retrieve(intent.getStringExtra("google.message_id"));
             content.setText(c.getString(1));
         }
-
     }
 
     @Override

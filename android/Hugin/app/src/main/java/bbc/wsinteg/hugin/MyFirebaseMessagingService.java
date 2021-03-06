@@ -11,6 +11,7 @@ import android.util.Base64;
 import android.util.Base64InputStream;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -55,6 +56,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         // TODO(developer): Handle FCM messages here.
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
+
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
         // Check if message contains a data payload.
@@ -74,11 +76,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 id = remoteMessage.getNotification().getTitle();
             handleNotification(id, remoteMessage.getNotification());
         }
-
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
     }
     // [END receive_message]
+
+
+    @Override
+    public void onNewToken(@NonNull String s) {
+        super.onNewToken(s);
+        Log.v(TAG, "new token");
+    }
 
     private void handleNotification(String id, RemoteMessage.Notification message) {
         Intent intent = new Intent(this, MainActivity.class);
@@ -130,14 +138,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 String state = Environment.getExternalStorageState();
                 if (Environment.MEDIA_MOUNTED.equals(state)) {
                     folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-                    if (folder.canWrite() == false) {
+                    if (!folder.canWrite()) {
                         folder = null;
                     }
                 }
                 if(folder == null) {
                     folder = context.getExternalFilesDir("docs");
                 }
-                if (folder.canWrite() == false) {
+                if (!folder.canWrite()) {
                     folder = context.getFilesDir();
                 }
                 if (folder.canWrite()) {
@@ -191,7 +199,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setDataAndType(contentUri, "text/html");
         startActivity(intent);
-
     }
 
     private void send(Map<String,String> data) {

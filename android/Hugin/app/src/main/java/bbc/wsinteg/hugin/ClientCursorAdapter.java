@@ -23,6 +23,5 @@ public class ClientCursorAdapter  extends ResourceCursorAdapter {
 
         TextView body = (TextView) view.findViewById(R.id.row_body);
         body.setText(cursor.getString(cursor.getColumnIndex("body")));
-
     }
 }
