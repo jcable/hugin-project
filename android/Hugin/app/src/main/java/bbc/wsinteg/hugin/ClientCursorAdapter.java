@@ -2,6 +2,7 @@ package bbc.wsinteg.hugin;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.text.Html;
 import android.view.View;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
@@ -22,6 +23,7 @@ public class ClientCursorAdapter  extends ResourceCursorAdapter {
         title.setText(cursor.getString(cursor.getColumnIndex("title")));
 
         TextView body = (TextView) view.findViewById(R.id.row_body);
-        body.setText(cursor.getString(cursor.getColumnIndex("body")));
+        String html = cursor.getString(cursor.getColumnIndex("body"));
+        body.setText(Html.fromHtml(html));
     }
 }
